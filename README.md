@@ -1,119 +1,122 @@
-# 🌌 Sky — Discord AI Bot
+# 🛡️ Sentinel — AI Discord Moderation Bot
 
-Sky is a smart Discord bot powered by **Gemini 2.5 Flash**. It supports multi-turn conversations, image analysis, slash commands, persistent memory, and admin controls.
+An intelligent Discord moderation bot powered by **Gemini AI** and built with **TypeScript + discord.js v14**.
 
----
-
-## 🚀 Setup
-
-### 1. Clone / extract the files
-Place `sky_bot.py`, `requirements.txt`, and `.env` in the same folder.
-
-### 2. Install dependencies
-```bash
-pip install -r requirements.txt
-```
-
-### 3. Create your `.env` file
-```env
-DISCORD_TOKEN=your_discord_bot_token
-GEMINI_API_KEY=your_gemini_api_key
-ADMIN_IDS=123456789,987654321
-```
-- Get your Discord token from the [Discord Developer Portal](https://discord.com/developers/applications)
-- Get your Gemini API key from [Google AI Studio](https://aistudio.google.com/)
-- `ADMIN_IDS` is a comma-separated list of Discord user IDs who can use admin commands (optional)
-
-### 4. Enable Discord Intents
-In the Developer Portal → your app → **Bot** tab:
-- Enable **Message Content Intent**
-- Enable **Server Members Intent** (optional)
-
-### 5. Run the bot
-```bash
-python sky_bot.py
-```
+Sentinel doesn't just check for banned words — it understands context, intent, harassment patterns, escalation, and can detect crises before they spiral.
 
 ---
 
-## 💬 Commands
+## Features
 
-### User commands
-
-| Command | Type | Description |
-|---|---|---|
-| (just type) | Chat | Talk to Sky naturally |
-| (attach image) | Chat | Analyze an image with a question |
-| `!reset` | Prefix | Clear your conversation memory |
-| `!summarize` | Prefix | Summarize your conversation |
-| `!history` | Prefix | Show your message count |
-| `!ping` | Prefix | Check bot latency |
-| `!skyhelp` | Prefix | Show full help menu |
-| `/ask` | Slash | Ask Sky a question |
-| `/reset` | Slash | Clear your memory |
-| `/summarize` | Slash | Summarize your chat |
-| `/ping` | Slash | Check bot latency |
-
-### Admin commands (requires `ADMIN_IDS` in `.env`)
-
-| Command | Description |
+| Feature | Description |
 |---|---|
-| `!status` | Show bot stats (uptime, users, messages) |
-| `!resetall` | Wipe all user memories |
-| `!skysetprompt <text>` | Change Sky's system prompt live |
+| 🧠 Context-aware toxicity detection | Gemini analyzes message intent, not just keywords |
+| 📈 Escalation detection | Tracks conversation heat and applies slowmode automatically |
+| 💙 Crisis detection | Detects self-harm/distress language and privately alerts mods |
+| 🚨 Raid protection | Detects coordinated join patterns using AI |
+| 📋 Incident summarizer | Auto-logs moderation incidents with AI summaries |
+| 🎯 Smart action system | Warns, times out, kicks, or bans based on severity |
+| 📬 Appeals system | Users can appeal; AI pre-evaluates before mods review |
+| 🔍 /modexplain | Get a full AI risk assessment on any user |
+| 📊 /riskreport | Top at-risk users with toxicity scores |
+| 🗂️ /summarize | AI summary of any channel's recent activity |
 
 ---
 
-## 🖼️ Image Analysis
+## Setup
 
-Simply attach a **PNG, JPG, JPEG, GIF, or WEBP** image to your message and ask a question. Sky will use Gemini Vision to analyze it automatically.
+### 1. Install dependencies
 
-**Example:**
-> *[attaches a photo of food]* "What dish is this and how do I make it?"
-
----
-
-## 🧠 Persistent Memory
-
-Conversations are saved to `sky_memory.json` in the same directory. This means:
-- Sky remembers context across bot restarts
-- The last **100 turns** per user are stored
-- Use `!reset` to clear your own history
-- Admins can use `!resetall` to wipe everything
-
----
-
-## ⚙️ Configuration
-
-You can customize Sky's personality by editing `DEFAULT_SYSTEM_PROMPT` in `sky_bot.py`, or change it live as an admin with:
-```
-!skysetprompt You are Sky, a sarcastic but helpful assistant...
+```bash
+npm install
 ```
 
----
+### 2. Configure environment
 
-## 📁 File Structure
-
-```
-sky_bot/
-├── sky_bot.py          # Main bot code
-├── requirements.txt    # Python dependencies
-├── .env                # Your secrets (never share this!)
-├── sky_memory.json     # Auto-created on first run
-└── README.md           # This file
+```bash
+cp .env.example .env
 ```
 
+Fill in:
+- `DISCORD_TOKEN` — from [Discord Developer Portal](https://discord.com/developers/applications)
+- `DISCORD_CLIENT_ID` — your app's Application ID
+- `GEMINI_API_KEY` — from [Google AI Studio](https://aistudio.google.com)
+
+### 3. Bot permissions
+
+In the Discord Developer Portal, enable these **Privileged Gateway Intents**:
+- ✅ Server Members Intent
+- ✅ Message Content Intent
+
+Bot requires these **permissions** in your server:
+- Manage Messages, Timeout Members, Kick Members, Ban Members
+- Send Messages, Read Message History, View Channels
+
+### 4. Build and run
+
+```bash
+npm run build
+npm start
+```
+
+Or for development with hot reload:
+
+```bash
+npm run dev
+```
+
 ---
 
-## 🛠️ Requirements
+## Slash Commands
 
-- Python 3.10+
-- discord.py 2.3+
-- google-generativeai 0.7+
-- aiohttp 3.9+
+| Command | Permission | Description |
+|---|---|---|
+| `/setup` | Administrator | Configure mod channel, log channel, and features |
+| `/modexplain @user` | Moderator | AI risk assessment for a user |
+| `/summarize [channel] [duration]` | Moderator | AI summary of channel activity |
+| `/riskreport` | Moderator | Top flagged users in the server |
+| `/appeal <message>` | Everyone | Submit an appeal for a moderation action |
+| `/appeals` | Moderator | Review pending appeals |
 
 ---
 
-## 📝 License
+## How it works
 
-Free to use and modify for personal and educational projects.
+1. **Every message** is analyzed by Gemini for toxicity, severity, and intent
+2. Messages are scored and logged; user toxicity profiles are updated
+3. Hostile messages trigger escalation tracking — if a channel heats up, slowmode activates
+4. High-severity messages alert moderators via the configured mod channel
+5. Users in distress trigger private crisis alerts to mods only
+6. Join events are monitored for raid patterns
+
+---
+
+## Project structure
+
+```
+src/
+├── index.ts              # Entry point, client setup
+├── types/index.ts        # TypeScript interfaces
+├── events/
+│   ├── messageCreate.ts  # Core message handler
+│   └── guildMemberAdd.ts # Join/raid detection
+├── services/
+│   ├── database.ts       # SQLite (better-sqlite3)
+│   ├── gemini.ts         # All Gemini AI calls
+│   ├── escalation.ts     # Per-channel escalation tracker
+│   └── raidDetection.ts  # Join pattern analysis
+├── commands/
+│   └── modCommands.ts    # All slash commands
+└── utils/
+    └── logger.ts         # Winston logger
+```
+
+---
+
+## Tech stack
+
+- **Runtime:** Node.js + TypeScript
+- **Discord:** discord.js v14
+- **AI:** Google Gemini 2.0 Flash
+- **Database:** SQLite via better-sqlite3 (zero config, local file)
+- **Logging:** Winston
